@@ -3,6 +3,9 @@ import pandas as pd
 import pg8000
 import os
 from io import BytesIO
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+from openpyxl.utils import get_column_letter
 
 # Set up Streamlit
 st.title("Supabase Data Exporter")
@@ -56,6 +59,7 @@ else:
                    exam_results.result,
                    exam_results.session,
                    exam_results.date,
+                   exam_results.type,
                    exam_results.attempt_index,
                    exam_results.score_index
             FROM exam_results 
@@ -79,13 +83,69 @@ else:
     def create_excel(data):
         col_names = [
             'Name', 'IATC ID', 'National ID', 'Class', 'Faculty', 
-            'Exam', 'Score', 'Result', 'Session', 'Date', 
+            'Exam', 'Score', 'Result', 'Session', 'Date', 'Type',
             'Attempt Index', 'Score Index'
         ]
-        df = pd.DataFrame(data, columns=col_names)
+        
+        # Create workbook and worksheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Results"
+        
+        # Write the headers
+        for col_num, header in enumerate(col_names, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            # Set header background color
+            cell.fill = PatternFill(start_color="8DE7D3", end_color="8DE7D3", fill_type="solid")
+            # Center align headers
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            # Bold headers
+            cell.font = Font(bold=True)
+        
+        # Write data rows
+        for row_num, row_data in enumerate(data, 2):
+            for col_num, value in enumerate(row_data, 1):
+                cell = ws.cell(row=row_num, column=col_num, value=value)
+                # Center align all data cells
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Adjust column widths
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                try:
+                    if cell.value:
+                        max_length = max(max_length, len(str(cell.value)))
+                except Exception:
+                    pass
+            ws.column_dimensions[col_letter].width = max_length + 2
+        
+        # Apply borders to all data
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=len(col_names)):
+            for cell in row:
+                cell.border = thin_border
+        
+        # Format the Class column (Column D) as numbers with two decimal places
+        for cell in ws["D"][1:]:  # Skip the header
+            cell.number_format = "0.00"
+        
+        # Conditional formatting for Results column (Column H)
+        for cell in ws["H"][1:]:  # Skip the header
+            if cell.value == "PASS":
+                cell.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # Light green
+            elif cell.value == "FAIL":
+                cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")  # Light red
+        
+        # Save the Excel file to a BytesIO object
         output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Results')
+        wb.save(output)
         output.seek(0)
         return output
 

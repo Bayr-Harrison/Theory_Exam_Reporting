@@ -80,7 +80,7 @@ else:
             return []
 
     # Create and download Excel file
-    def create_excel(data):
+    def create_excel(data, start_date, end_date):
         col_names = [
             'Name', 'IATC ID', 'National ID', 'Class', 'Faculty', 
             'Exam', 'Score', 'Result', 'Session', 'Date', 'Type',
@@ -109,6 +109,9 @@ else:
                 # Center align all data cells
                 cell.alignment = Alignment(horizontal="center", vertical="center")
         
+        # Apply filters on the header row
+        ws.auto_filter.ref = ws.dimensions
+
         # Adjust column widths
         for col in ws.columns:
             max_length = 0
@@ -156,11 +159,12 @@ else:
             data = query_database(start_date, end_date)
             if data:
                 st.write(f"Query returned {len(data)} rows.")
-                excel_file = create_excel(data)
+                excel_file = create_excel(data, start_date, end_date)
+                file_name = f"Exam Results ({start_date} to {end_date}).xlsx"
                 st.download_button(
                     label="Download Excel File",
                     data=excel_file,
-                    file_name="query_results.xlsx",
+                    file_name=file_name,
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
             else:

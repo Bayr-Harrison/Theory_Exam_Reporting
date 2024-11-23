@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import pg8000
@@ -9,30 +8,25 @@ from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
 # Set up Streamlit
-st.title("Theory Results Reporting Portal")
-st.write("Enter the password to access the portal.")
-
+st.title("Supabase Data Exporter")
+st.write("Enter the password to access the application.")
 
 # Authentication
-def authenticate(password):
-    correct_password = os.environ["APP_PASSWORD"]
-    return password == correct_password
-
-# Password input
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
+# Handle authentication
 if not st.session_state["authenticated"]:
     password = st.text_input("Password", type="password")
-    if st.button("Submit"):
-        if authenticate(password):
+    if password:
+        if password == os.environ["APP_PASSWORD"]:
             st.session_state["authenticated"] = True
             st.success("Authenticated successfully!")
-            st.experimental_rerun()  # Immediately reload the app
         else:
             st.error("Incorrect password. Please try again.")
-else:
-    # Main app functionality
+
+# Main app functionality
+if st.session_state["authenticated"]:
     st.write("Select a date range to query the database and download results as an Excel file.")
 
     # Date inputs

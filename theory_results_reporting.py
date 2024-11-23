@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import pg8000
@@ -10,6 +11,7 @@ from openpyxl.utils import get_column_letter
 # Set up Streamlit
 st.title("Theory Results Reporting Portal")
 st.write("Enter the password to access the portal.")
+
 
 # Authentication
 def authenticate(password):
@@ -26,6 +28,7 @@ if not st.session_state["authenticated"]:
         if authenticate(password):
             st.session_state["authenticated"] = True
             st.success("Authenticated successfully!")
+            st.experimental_rerun()  # Immediately reload the app
         else:
             st.error("Incorrect password. Please try again.")
 else:
@@ -138,6 +141,10 @@ else:
         # Format the Class column (Column D) as numbers with two decimal places
         for cell in ws["D"][1:]:  # Skip the header
             cell.number_format = "0.00"
+        
+        # Format the Date column (Column J) as 'dd-mmm-yyyy'
+        for cell in ws["J"][1:]:  # Skip the header
+            cell.number_format = "DD-MMM-YYYY"
         
         # Conditional formatting for Results column (Column H)
         for cell in ws["H"][1:]:  # Skip the header

@@ -8,8 +8,8 @@ from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
 # Set up Streamlit
-st.title("Supabase Data Exporter")
-st.write("Enter the password to access the application.")
+st.title("Theory Results Reporting Portal")
+st.write("Enter the password to access the portal.")
 
 # Authentication
 def authenticate(password):

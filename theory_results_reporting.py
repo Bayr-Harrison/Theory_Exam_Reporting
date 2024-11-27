@@ -8,7 +8,7 @@ from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
 # Set up Streamlit
-st.title("Vocational Assessment Thoery Reporting Portal")
+st.title("Vocational Assessment Theory Reporting Portal")
 st.write("Enter the password to access the Reporting Portal.")
 
 # Authentication
